@@ -1,23 +1,59 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function LoginPage() {
+export default function AuthPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
   const [credentials, setCredentials] = useState({
     username: '',
-    password: ''
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add actual authentication logic
+    setError('');
+
+    // Basic validation
+    if (isRegistering) {
+      if (credentials.password !== credentials.confirmPassword) {
+        return setError('Passwords do not match');
+      }
+      if (!credentials.email.includes('@')) {
+        return setError('Invalid email address');
+      }
+    }
+
+    // TODO: Add actual API call here
+    console.log(isRegistering ? 'Registering:' : 'Logging in:', credentials);
+    
+    // Simulate successful registration/login
     navigate('/profile');
+  };
+
+  const toggleAuthMode = () => {
+    setIsRegistering(!isRegistering);
+    setError('');
   };
 
   return (
     <div className="auth-form">
-      <h2>Welcome to HooMatches</h2>
+      <h2>{isRegistering ? 'Create Account' : 'Welcome to HooMatches'}</h2>
       <form onSubmit={handleSubmit}>
+        {isRegistering && (
+          <div className="form-group">
+            <label>Email:</label>
+            <input
+              type="email"
+              value={credentials.email}
+              onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+              required
+            />
+          </div>
+        )}
+        
         <div className="form-group">
           <label>Username:</label>
           <input
@@ -27,6 +63,7 @@ export default function LoginPage() {
             required
           />
         </div>
+
         <div className="form-group">
           <label>Password:</label>
           <input
@@ -36,8 +73,32 @@ export default function LoginPage() {
             required
           />
         </div>
-        <button type="submit">Continue</button>
+
+        {isRegistering && (
+          <div className="form-group">
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={credentials.confirmPassword}
+              onChange={(e) => setCredentials({...credentials, confirmPassword: e.target.value})}
+              required
+            />
+          </div>
+        )}
+
+        {error && <div className="error-message">{error}</div>}
+
+        <button type="submit">
+          {isRegistering ? 'Register' : 'Login'}
+        </button>
       </form>
+
+      <div className="auth-toggle">
+        {isRegistering ? 'Already have an account? ' : 'Need an account? '}
+        <button type="button" onClick={toggleAuthMode}>
+          {isRegistering ? 'Login here' : 'Register here'}
+        </button>
+      </div>
     </div>
   );
 }
