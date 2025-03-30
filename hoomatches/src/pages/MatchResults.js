@@ -24,7 +24,7 @@ export default function MatchResults() {
                 if (!result.success) {
                     setMatchData({ success: false, reason: result.reason });
                 } else {
-                    setMatchData({ success: true, contact: result.contact });
+                    setMatchData({ success: true, contact: result.contact, score: result.score });
                 }
             } catch (error) {
                 console.error('Error fetching match data:', error);
@@ -74,6 +74,7 @@ export default function MatchResults() {
                 <>
                     <h1 className="success">🎉 Match Found!</h1>
                     <p>Contact: {matchData.contact}</p>
+                    <p>Score: {matchData.score}</p>
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                         <button 
                             onClick={() => handleAction('continue')} 

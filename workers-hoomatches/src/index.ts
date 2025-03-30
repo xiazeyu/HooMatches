@@ -476,7 +476,7 @@ Questions: ${JSON.stringify(steps)}
 							const matchedUser = await userCollection.findOne({ username: matchedUsername });
 
 							if (matchedUser && matchedUser.email) {
-								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email }), {
+								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email, score: existingMatch.score }), {
 									status: 200,
 									headers: { 'Content-Type': 'application/json' },
 								});
@@ -525,11 +525,12 @@ Questions: ${JSON.stringify(steps)}
 								user_b: bestMatch.username,
 								datetime: new Date(),
 								status: "match",
+								score: bestMatch.score,
 							});
 
 							const matchedUser = await userCollection.findOne({ username: bestMatch.username });
 							if (matchedUser && matchedUser.email) {
-								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email }), {
+								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email, score: bestMatch.score }), {
 									status: 200,
 									headers: { 'Content-Type': 'application/json' },
 								});
@@ -563,8 +564,15 @@ Questions: ${JSON.stringify(steps)}
 			}
 
 			default: {
-				const response = new Response('Not Found', { status: 404 });
-				return addCorsHeaders(response);
+				try {
+					// Serve the React app for unknown paths
+					const reactApp = await env.ASSETS.fetch(request);
+					return addCorsHeaders(reactApp);
+				} catch (error) {
+					console.error('Error serving React app:', error);
+					const response = new Response('Internal Server Error', { status: 500 });
+					return addCorsHeaders(response);
+				}
 			}
 		}
 	},
