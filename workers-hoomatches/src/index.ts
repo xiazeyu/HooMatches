@@ -20,11 +20,49 @@ export default {
 		const client = new MongoClient(MONGO_URI);
 		const dbName = 'hoomatches';
 
+		const corsHeaders = {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+			"Access-Control-Max-Age": "86400",
+		};
+
+		async function handleOptions(request: Request): Promise<Response> {
+			if (
+				request.headers.get("Origin") !== null &&
+				request.headers.get("Access-Control-Request-Method") !== null &&
+				request.headers.get("Access-Control-Request-Headers") !== null
+			) {
+				// Handle CORS preflight requests
+				return new Response(null, {
+					headers: {
+						...corsHeaders,
+						"Access-Control-Allow-Headers": request.headers.get(
+							"Access-Control-Request-Headers"
+						) || "",
+					},
+				});
+			} else {
+				// Handle standard OPTIONS request
+				return new Response(null, {
+					headers: {
+						Allow: "GET, HEAD, POST, OPTIONS",
+					},
+				});
+			}
+		}
+
 		const addCorsHeaders = (response: Response): Response => {
 			const headers = new Headers(response.headers);
-			headers.set('Access-Control-Allow-Origin', '*');
+			headers.set("Access-Control-Allow-Origin", "*");
+			headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+			headers.set("Access-Control-Allow-Headers", "Content-Type");
 			return new Response(response.body, { ...response, headers });
 		};
+
+		if (request.method === "OPTIONS") {
+			// Handle preflight requests
+			return handleOptions(request);
+		}
 
 		switch (url.pathname) {
 

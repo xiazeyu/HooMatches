@@ -2,10 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProgressIndicator from '../components/ProgressIndicator';
 
-// Mock data storage
-let mockAnswers = {};
-
-// Mock API functions
 const fetchStepData = async (step, username) => {
   const requestOptions = {
     method: 'GET',
@@ -20,11 +16,6 @@ const fetchStepData = async (step, username) => {
   }
 
   return result.data;
-};
-
-const mockSaveStepData = async (answers) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  mockAnswers = { ...mockAnswers, ...answers };
 };
 
 const postStepData = async (username, answers) => {
@@ -45,22 +36,6 @@ const postStepData = async (username, answers) => {
   if (!result.success) {
     throw new Error('Failed to save step data');
   }
-};
-
-const fetchMatchData = async (username) => {
-  const requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-  };
-
-  const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/api/match?username=${username}`, requestOptions);
-  const result = await response.json();
-
-  if (!result.success) {
-    throw new Error('Failed to fetch match data');
-  }
-
-  return result.contact;
 };
 
 export default function ProfileForm() {
@@ -90,6 +65,7 @@ export default function ProfileForm() {
         setError('');
       } catch (err) {
         setError('Failed to load step data');
+        console.log(err);
       } finally {
         setLoading(false);
       }

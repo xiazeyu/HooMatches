@@ -7,6 +7,23 @@ export default function MatchResults() {
     // Temporary mock data
     const matchStatus = Math.random() > 0.5;
     const compatibilityScore = Math.floor(Math.random() * 41) + 60;
+    
+    const fetchMatchData = async (username) => {
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+    
+      const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/api/match?username=${username}`, requestOptions);
+      const result = await response.json();
+    
+      if (!result.success) {
+        throw new Error('Failed to fetch match data');
+      }
+    
+      return result.contact;
+    };
+    
 
     return (
       <div className="results-container">
