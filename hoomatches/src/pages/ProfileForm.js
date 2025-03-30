@@ -12,7 +12,7 @@ const fetchStepData = async (step, username) => {
     redirect: 'follow'
   };
 
-  const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/profile?step=${step}&username=${username}`, requestOptions);
+  const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/api/profile?step=${step}&username=${username}`, requestOptions);
   const result = await response.json();
 
   if (!result.success) {
@@ -39,7 +39,7 @@ const postStepData = async (username, answers) => {
     redirect: 'follow'
   };
 
-  const response = await fetch("https://workers-hoomatches.kkmk.workers.dev/profile", requestOptions);
+  const response = await fetch("https://workers-hoomatches.kkmk.workers.dev/api/profile", requestOptions);
   const result = await response.json();
 
   if (!result.success) {
@@ -53,7 +53,7 @@ const fetchMatchData = async (username) => {
     redirect: 'follow'
   };
 
-  const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/match?username=${username}`, requestOptions);
+  const response = await fetch(`https://workers-hoomatches.kkmk.workers.dev/api/match?username=${username}`, requestOptions);
   const result = await response.json();
 
   if (!result.success) {

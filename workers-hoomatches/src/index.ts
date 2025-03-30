@@ -28,7 +28,7 @@ export default {
 
 		switch (url.pathname) {
 
-			case '/login': {
+			case '/api/login': {
 				if (request.method !== 'POST') {
 					const response = new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
 						status: 405,
@@ -88,7 +88,7 @@ export default {
 				}
 			}
 
-			case '/register': {
+			case '/api/register': {
 				if (request.method !== 'POST') {
 					const response = new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
 						status: 405,
@@ -151,7 +151,7 @@ export default {
 				}
 			}
 
-			case '/profile': {
+			case '/api/profile': {
 				if (request.method === 'POST') {
 					let body: { username: string; qna: { qid: number; answer: string }[] };
 					try {
@@ -306,7 +306,7 @@ export default {
 				}
 			}
 
-			case '/match': {
+			case '/api/match': {
 				if (request.method === 'POST') {
 					let body: { action: string; username: string };
 					try {

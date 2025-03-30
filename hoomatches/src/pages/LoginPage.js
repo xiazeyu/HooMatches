@@ -28,8 +28,8 @@ export default function AuthPage() {
 
     try {
       const endpoint = isRegistering
-        ? 'https://workers-hoomatches.kkmk.workers.dev/register'
-        : 'https://workers-hoomatches.kkmk.workers.dev/login';
+        ? 'https://workers-hoomatches.kkmk.workers.dev/api/register'
+        : 'https://workers-hoomatches.kkmk.workers.dev/api/login';
 
       const raw = isRegistering
         ? JSON.stringify({
