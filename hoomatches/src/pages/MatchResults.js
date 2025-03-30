@@ -1,10 +1,16 @@
+import { useSearchParams } from 'react-router-dom';
+
 export default function MatchResults() {
+    const [searchParams] = useSearchParams();
+    const username = searchParams.get('username') || 'Guest';
+
     // Temporary mock data
     const matchStatus = Math.random() > 0.5;
     const compatibilityScore = Math.floor(Math.random() * 41) + 60;
-  
+
     return (
       <div className="results-container">
+        <h2>Welcome, {username}!</h2>
         {matchStatus ? (
           <>
             <h1 className="success">🎉 Match Found!</h1>
@@ -20,4 +26,4 @@ export default function MatchResults() {
         )}
       </div>
     );
-  }
+}

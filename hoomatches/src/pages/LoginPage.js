@@ -60,7 +60,7 @@ export default function AuthPage() {
       }
 
       // Navigate only if the response indicates success
-      navigate('/profile');
+      navigate(`/profile?step=1&username=${credentials.username}`);
     } catch (err) {
       setError(err.message);
     }
