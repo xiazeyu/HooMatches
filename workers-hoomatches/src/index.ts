@@ -11,14 +11,39 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+// this is a couple matching project.
+
+
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		switch (url.pathname) {
-			case '/message':
-				return new Response('Hello, World!');
-			case '/random':
+			case '/uuid':
 				return new Response(crypto.randomUUID());
+
+			case '/login':
+				// login and register is now just dummy one.
+				// they receive post of email and password
+				// return a jwt token
+				const loginBody = await request.json();
+				return new Response('Hello, World!');
+			case '/register':
+				// register and login is now just dummy one.
+				// they receive post of email and password
+				// return a jwt token
+				return new Response('Hello, World!');
+
+			case '/profile':
+				// get:
+				// param of page.
+				
+				return new Response('Hello, World!');
+			
+			case '/matches':
+				// get matches
+				return new Response('Hello, World!');
+
 			default:
 				return new Response('Not Found', { status: 404 });
 		}
