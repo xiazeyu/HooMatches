@@ -307,6 +307,85 @@ export default {
 			}
 
 			case '/match': {
+				if (request.method === 'POST') {
+					let body: { action: string; username: string };
+					try {
+						body = await request.json();
+					} catch {
+						const response = new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
+							status: 400,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					}
+
+					const { action, username } = body;
+					if (!action || !username) {
+						const response = new Response(JSON.stringify({ success: false, message: 'Missing action or username' }), {
+							status: 400,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					}
+
+					try {
+						await client.connect();
+						const db = client.db(dbName);
+						const collection = db.collection('match');
+
+						if (action === 'continue') {
+							// Handle "continue" action
+							await collection.updateOne(
+								{ user_a: username, status: 'match' },
+								{ $set: { status: 'a_continue' } }
+							);
+							await collection.updateOne(
+								{ user_b: username, status: 'match' },
+								{ $set: { status: 'b_continue' } }
+							);
+							await collection.updateOne(
+								{ user_a: username, status: 'b_continue' },
+								{ $set: { status: 'finish' } }
+							);
+							await collection.updateOne(
+								{ user_b: username, status: 'a_continue' },
+								{ $set: { status: 'finish' } }
+							);
+						} else if (action === 'skip') {
+							// Handle "skip" action
+							await collection.updateMany(
+								{ user_a: username },
+								{ $set: { status: 'skip' } }
+							);
+							await collection.updateMany(
+								{ user_b: username },
+								{ $set: { status: 'skip' } }
+							);
+						} else {
+							const response = new Response(JSON.stringify({ success: false, message: 'Invalid action' }), {
+								status: 400,
+								headers: { 'Content-Type': 'application/json' },
+							});
+							return addCorsHeaders(response);
+						}
+
+						const response = new Response(JSON.stringify({ success: true, message: 'Action processed successfully' }), {
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					} catch (error) {
+						console.error('Database connection error:', error);
+						const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+							status: 500,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					} finally {
+						await client.close();
+					}
+				}
+
 				if (request.method === 'GET') {
 					const username = url.searchParams.get('username');
 					if (!username) {
