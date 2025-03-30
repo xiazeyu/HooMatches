@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
@@ -20,11 +21,73 @@ export default {
 		const client = new MongoClient(MONGO_URI);
 		const dbName = 'hoomatches';
 
+		const ai = new GoogleGenAI({ apiKey: env.GEMINI_API });
+
 		const corsHeaders = {
 			"Access-Control-Allow-Origin": "*",
 			"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
 			"Access-Control-Max-Age": "86400",
 		};
+
+		const steps = [
+			{
+				current_step: 1,
+				total_steps: 3,
+				current_step_title: "Basic Information",
+				qna: [
+					{ qid: 0, question: "What is your age? (Please enter a number)", answer: "", placeholder: "25" },
+					{ qid: 1, question: "What is your preferred gender for a match?", answer: "", placeholder: "Male/Female/Non-binary" },
+					{ qid: 2, question: "What is your acceptable age difference range?", answer: "", placeholder: "±3 years" }
+				]
+			},
+			{
+				current_step: 2,
+				total_steps: 3,
+				current_step_title: "Personality & Compatibility",
+				qna: [
+					{ qid: 3, question: "How would you describe your personality?", answer: "", placeholder: "Outgoing and thoughtful" },
+					{ qid: 4, question: "What is your role in relationships?", answer: "", placeholder: "Listener/Caregiver/Equal Partner" },
+					{ qid: 5, question: "What do you value most in a relationship?", answer: "", placeholder: "Trust/Communication/Shared Values" },
+					{ qid: 6, question: "Should your partner share similar personality traits?", answer: "", placeholder: "Yes/No/Somewhat" },
+					{ qid: 7, question: "What is your MBTI type?", answer: "", placeholder: "INFP" },
+					{ qid: 8, question: "Preferred partner MBTI type?", answer: "", placeholder: "ENFJ/Any" },
+					{ qid: 9, question: "What is your zodiac sign?", answer: "", placeholder: "Leo" },
+					{ qid: 10, question: "Preferred partner zodiac sign?", answer: "", placeholder: "Aquarius/Any" }
+				]
+			},
+			{
+				current_step: 3,
+				total_steps: 3,
+				current_step_title: "Interests & Activities",
+				qna: [
+					{ qid: 11, question: "What type of people do you want to meet at the event?", answer: "", placeholder: "Creative/Adventurous/Intellectual" },
+					{ qid: 12, question: "What's your ideal date activity?", answer: "", placeholder: "Dinner/Museum/Outdoor Adventure" },
+					{ qid: 13, question: "What hobbies would you share with a partner?", answer: "", placeholder: "Hiking/Cooking/Gaming" },
+					{ qid: 14, question: "Which Valentine's event interests you most?", answer: "", placeholder: "Cocktail Party/Workshop/Speed Dating" },
+					{ qid: 15, question: "What aspect matters most in partner compatibility?", answer: "", placeholder: "Values/Hobbies/Communication Style" }
+				]
+			}
+		];
+
+		async function queryGemini(userA: any, userB: any, steps: any[]): Promise<number> {
+			const prompt = `
+I have two users that I want to see how they matches as partners. I've asked questions to two users, with their answers provided.
+Give me one score in range of 0-100 on how they matches. Just give me answers, no explanations or others. If user input is missing, give me 0.
+User A: ${JSON.stringify(userA)}
+User B: ${JSON.stringify(userB)}
+Questions: ${JSON.stringify(steps)}
+			`;
+			console.log("AI Request Prompt:", prompt); // Log the AI request prompt
+
+			const response = await ai.models.generateContent({
+				model: "gemini-2.0-flash",
+				contents: prompt,
+			});
+
+			console.log("AI Response:", response.text); // Log the AI response
+
+			return parseInt((response.text ?? "").match(/\d+/)?.[0] || "0", 10);
+		}
 
 		async function handleOptions(request: Request): Promise<Response> {
 			if (
@@ -254,6 +317,8 @@ export default {
 
 				if (request.method === 'GET') {
 					const step = parseInt(url.searchParams.get('step') || '1', 10);
+					const stepData = steps[step - 1];
+			
 					if (isNaN(step) || step < 1 || step > 3) {
 						const response = new Response(JSON.stringify({ success: false, message: 'Invalid step parameter' }), {
 							status: 400,
@@ -261,48 +326,6 @@ export default {
 						});
 						return addCorsHeaders(response);
 					}
-
-					const steps = [
-						{
-							current_step: 1,
-							total_steps: 3,
-							current_step_title: "Basic Information",
-							qna: [
-								{ qid: 0, question: "What is your age? (Please enter a number)", answer: "", placeholder: "25" },
-								{ qid: 1, question: "What is your preferred gender for a match?", answer: "", placeholder: "Male/Female/Non-binary" },
-								{ qid: 2, question: "What is your acceptable age difference range?", answer: "", placeholder: "±3 years" }
-							]
-						},
-						{
-							current_step: 2,
-							total_steps: 3,
-							current_step_title: "Personality & Compatibility",
-							qna: [
-								{ qid: 3, question: "How would you describe your personality?", answer: "", placeholder: "Outgoing and thoughtful" },
-								{ qid: 4, question: "What is your role in relationships?", answer: "", placeholder: "Listener/Caregiver/Equal Partner" },
-								{ qid: 5, question: "What do you value most in a relationship?", answer: "", placeholder: "Trust/Communication/Shared Values" },
-								{ qid: 6, question: "Should your partner share similar personality traits?", answer: "", placeholder: "Yes/No/Somewhat" },
-								{ qid: 7, question: "What is your MBTI type?", answer: "", placeholder: "INFP" },
-								{ qid: 8, question: "Preferred partner MBTI type?", answer: "", placeholder: "ENFJ/Any" },
-								{ qid: 9, question: "What is your zodiac sign?", answer: "", placeholder: "Leo" },
-								{ qid: 10, question: "Preferred partner zodiac sign?", answer: "", placeholder: "Aquarius/Any" }
-							]
-						},
-						{
-							current_step: 3,
-							total_steps: 3,
-							current_step_title: "Interests & Activities",
-							qna: [
-								{ qid: 11, question: "What type of people do you want to meet at the event?", answer: "", placeholder: "Creative/Adventurous/Intellectual" },
-								{ qid: 12, question: "What's your ideal date activity?", answer: "", placeholder: "Dinner/Museum/Outdoor Adventure" },
-								{ qid: 13, question: "What hobbies would you share with a partner?", answer: "", placeholder: "Hiking/Cooking/Gaming" },
-								{ qid: 14, question: "Which Valentine's event interests you most?", answer: "", placeholder: "Cocktail Party/Workshop/Speed Dating" },
-								{ qid: 15, question: "What aspect matters most in partner compatibility?", answer: "", placeholder: "Values/Hobbies/Communication Style" }
-							]
-						}
-					];
-
-					const stepData = steps[step - 1];
 
 					try {
 						await client.connect();
@@ -434,20 +457,86 @@ export default {
 						return addCorsHeaders(response);
 					}
 
-					// Simulate random matching logic
-					const randomValue = Math.random();
-					if (randomValue < 0.8) {
-						const response = new Response(JSON.stringify({ success: true, contact: 'userb@example.com' }), {
+					try {
+						await client.connect();
+						const db = client.db(dbName);
+						const matchCollection = db.collection('match');
+						const userCollection = db.collection('user');
+
+						// Check for existing matches
+						const existingMatch = await matchCollection.findOne({
+							$or: [
+								{ user_a: username, status: { $ne: 'skip' } },
+								{ user_b: username, status: { $ne: 'skip' } }
+							]
+						});
+
+						if (existingMatch) {
+							const matchedUsername = existingMatch.user_a === username ? existingMatch.user_b : existingMatch.user_a;
+							const matchedUser = await userCollection.findOne({ username: matchedUsername });
+
+							if (matchedUser && matchedUser.email) {
+								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email }), {
+									status: 200,
+									headers: { 'Content-Type': 'application/json' },
+								});
+								return addCorsHeaders(response);
+							}
+						}
+
+						// Fetch all users excluding the current user
+						const users = await userCollection.find({ username: { $ne: username } }).toArray();
+						let bestMatch: { username: string; score: number } | null = null;
+
+						for (const otherUser of users) {
+							const score = await queryGemini(
+								{ 
+									username, 
+									information: (await userCollection.findOne({ username }))?.information || {} 
+								},
+								{ username: otherUser.username, information: otherUser.information },
+								steps
+							);
+
+							if (!bestMatch || score > bestMatch.score) {
+								bestMatch = { username: otherUser.username, score };
+							}
+						}
+
+						if (bestMatch) {
+							// Insert match into the database
+							await matchCollection.insertOne({
+								user_a: username,
+								user_b: bestMatch.username,
+								datetime: new Date(),
+								status: "match",
+							});
+
+							const matchedUser = await userCollection.findOne({ username: bestMatch.username });
+							if (matchedUser && matchedUser.email) {
+								const response = new Response(JSON.stringify({ success: true, contact: matchedUser.email }), {
+									status: 200,
+									headers: { 'Content-Type': 'application/json' },
+								});
+								return addCorsHeaders(response);
+							}
+						}
+
+						const response = new Response(JSON.stringify({ success: false, reason: 'No suitable match found' }), {
 							status: 200,
 							headers: { 'Content-Type': 'application/json' },
 						});
 						return addCorsHeaders(response);
-					} else {
-						const response = new Response(JSON.stringify({ success: false, reason: 'not enough user' }), {
-							status: 200,
+
+					} catch (error) {
+						console.error('Database connection error:', error);
+						const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+							status: 500,
 							headers: { 'Content-Type': 'application/json' },
 						});
 						return addCorsHeaders(response);
+					} finally {
+						await client.close();
 					}
 				}
 

@@ -1,0 +1,106 @@
+[
+  {
+    "_id": {
+      "$oid": "67e8df356fdb0bc61e91d9cd"
+    },
+    "username": "u1",
+    "password": "1",
+    "information": {
+      "0": "24",
+      "1": "female",
+      "2": "2-4 years",
+      "3": "Outgoing and empathetic",
+      "4": "listener",
+      "5": "trust and honesty",
+      "6": "yes",
+      "7": "INFP",
+      "8": "ENFJ or similar",
+      "9": "leo",
+      "10": "aquarius or any compatible sign",
+      "11": "creative and thoughtful individuals",
+      "12": "a cozy dinner at a nice restaurant",
+      "13": "hiking, painting, and reading",
+      "14": "cocktail party with live music",
+      "15": "shared values and mutual respect"
+    },
+    "email": "alice.williams@example.com"
+  },
+  {
+    "_id": {
+      "$oid": "67e8df356fdb0bc61e91d9ce"
+    },
+    "username": "abc",
+    "password": "abc",
+    "information": {
+      "0": "28",
+      "1": "male",
+      "2": "3-5 years",
+      "3": "Adventurous and curious",
+      "4": "equal partner",
+      "5": "open communication",
+      "6": "somewhat",
+      "7": "ENTP",
+      "8": "INFJ or open-minded types",
+      "9": "aries",
+      "10": "libra or compatible signs",
+      "11": "adventurous and fun-loving people",
+      "12": "exploring a museum or art gallery",
+      "13": "gaming, traveling, and photography",
+      "14": "a hands-on workshop or class",
+      "15": "shared hobbies and good communication"
+    },
+    "email": "john.doe@example.com"
+  },
+  {
+    "_id": {
+      "$oid": "67e8df356fdb0bc61e91d9cf"
+    },
+    "username": "morgan_taylor",
+    "password": "mypassword",
+    "information": {
+      "0": "32",
+      "1": "non-binary",
+      "2": "1-3 years",
+      "3": "Calm and introspective",
+      "4": "caregiver",
+      "5": "shared values and understanding",
+      "6": "no",
+      "7": "ISFJ",
+      "8": "ENTP or open to any",
+      "9": "virgo",
+      "10": "pisces or compatible signs",
+      "11": "intellectual and kind individuals",
+      "12": "an outdoor adventure like hiking or kayaking",
+      "13": "cooking, gardening, and writing",
+      "14": "speed dating with meaningful conversations",
+      "15": "compatibility in communication style"
+    },
+    "email": "morgan.taylor@example.com"
+  },
+  {
+    "_id": {
+      "$oid": "67e8df356fdb0bc61e91d9d0"
+    },
+    "username": "emma_j",
+    "password": "emma2023",
+    "information": {
+      "0": "26",
+      "1": "female",
+      "2": "2-4 years",
+      "3": "Friendly and outgoing",
+      "4": "listener",
+      "5": "trust and loyalty",
+      "6": "yes",
+      "7": "ESFP",
+      "8": "ISFP or similar",
+      "9": "sagittarius",
+      "10": "gemini or compatible signs",
+      "11": "creative and sociable people",
+      "12": "a dinner followed by a fun activity",
+      "13": "hiking, dancing, and trying new cuisines",
+      "14": "a cocktail party with interactive games",
+      "15": "shared values and a sense of humor"
+    },
+    "email": "emma.johnson@example.com"
+  }
+]
