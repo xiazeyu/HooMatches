@@ -12,7 +12,7 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -26,11 +26,28 @@ export default function AuthPage() {
       }
     }
 
-    // TODO: Add actual API call here
-    console.log(isRegistering ? 'Registering:' : 'Logging in:', credentials);
-    
-    // Simulate successful registration/login
-    navigate('/profile');
+    try {
+      const endpoint = isRegistering ? '/api/register' : '/api/login';
+      const payload = isRegistering
+        ? { username: credentials.username, email: credentials.email, password: credentials.password }
+        : { username: credentials.username, password: credentials.password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+
+      // Simulate successful registration/login
+      navigate('/profile');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const toggleAuthMode = () => {
@@ -48,7 +65,7 @@ export default function AuthPage() {
             <input
               type="email"
               value={credentials.email}
-              onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+              onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
               required
             />
           </div>
@@ -59,7 +76,7 @@ export default function AuthPage() {
           <input
             type="text"
             value={credentials.username}
-            onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             required
           />
         </div>
@@ -69,7 +86,7 @@ export default function AuthPage() {
           <input
             type="password"
             value={credentials.password}
-            onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             required
           />
         </div>
@@ -80,7 +97,7 @@ export default function AuthPage() {
             <input
               type="password"
               value={credentials.confirmPassword}
-              onChange={(e) => setCredentials({...credentials, confirmPassword: e.target.value})}
+              onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })}
               required
             />
           </div>
