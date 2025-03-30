@@ -11,37 +11,44 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-// this is a couple matching project.
+import { MongoClient } from 'mongodb';
 
-
+const uri = 'mongodb+srv://zeyuxia:<db_password>@cluster0.mlrjvkn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const client = new MongoClient(uri);
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
-		switch (url.pathname) {
-			case '/uuid':
-				return new Response(crypto.randomUUID());
 
+		// Ensure MongoDB client is connected
+		if (!client.isConnected()) {
+			await client.connect();
+		}
+
+		const db = client.db('your_database_name'); // Replace with your database name
+		const collection = db.collection('your_collection_name'); // Replace with your collection name
+
+		switch (url.pathname) {
 			case '/login':
-				// login and register is now just dummy one.
-				// they receive post of email and password
-				// return a jwt token
 				const loginBody = await request.json();
-				return new Response('Hello, World!');
+				// Example: Query MongoDB
+				const user = await collection.findOne({ username: loginBody.username });
+				if (user) {
+					return new Response(JSON.stringify(user), { status: 200 });
+				} else {
+					return new Response('User not found', { status: 404 });
+				}
+
 			case '/register':
-				// register and login is now just dummy one.
-				// they receive post of email and password
-				// return a jwt token
-				return new Response('Hello, World!');
+				const registerBody = await request.json();
+				// Example: Insert into MongoDB
+				const result = await collection.insertOne(registerBody);
+				return new Response(JSON.stringify(result), { status: 201 });
 
 			case '/profile':
-				// get:
-				// param of page.
-				
 				return new Response('Hello, World!');
-			
+
 			case '/matches':
-				// get matches
 				return new Response('Hello, World!');
 
 			default:
