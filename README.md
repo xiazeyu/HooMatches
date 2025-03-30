@@ -23,7 +23,7 @@ https://workers-hoomatches.kkmk.workers.dev/
 https://documenter.getpostman.com/view/17218163/2sB2cPk5eD
 
 ## Github repo
-https://github.com/xiazeyu/HooMatchs
+https://github.com/xiazeyu/HooMatches
 
 
 ## file structure
