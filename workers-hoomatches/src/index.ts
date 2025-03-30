@@ -19,33 +19,42 @@ export default {
 		const MONGO_URI = `mongodb+srv://zeyuxia:${env.DB_PASS}@cluster0.mlrjvkn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 		const client = new MongoClient(MONGO_URI);
 		const dbName = 'hoomatches';
-		
+
+		const addCorsHeaders = (response: Response): Response => {
+			const headers = new Headers(response.headers);
+			headers.set('Access-Control-Allow-Origin', '*');
+			return new Response(response.body, { ...response, headers });
+		};
+
 		switch (url.pathname) {
 
 			case '/login': {
 				if (request.method !== 'POST') {
-					return new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
 						status: 405,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				let body: { username: string; password: string };
 				try {
 					body = await request.json();
 				} catch {
-					return new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				const { username, password } = body;
 				if (!username || !password) {
-					return new Response(JSON.stringify({ success: false, message: 'Missing username or password' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Missing username or password' }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				try {
@@ -55,22 +64,25 @@ export default {
 
 					const user = await collection.findOne({ username, password });
 					if (user) {
-						return new Response(JSON.stringify({ success: true, message: 'Login successful', user: { username } }), {
+						const response = new Response(JSON.stringify({ success: true, message: 'Login successful', user: { username } }), {
 							status: 200,
 							headers: { 'Content-Type': 'application/json' },
-						});
+						 });
+						return addCorsHeaders(response);
 					} else {
-						return new Response(JSON.stringify({ success: false, message: 'Invalid credentials' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Invalid credentials' }), {
 							status: 401,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					}
 				} catch (error) {
 					console.error('Database connection error:', error);
-					return new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
 						status: 500,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				} finally {
 					await client.close();
 				}
@@ -78,28 +90,31 @@ export default {
 
 			case '/register': {
 				if (request.method !== 'POST') {
-					return new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
 						status: 405,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				let body: { username: string; email: string; password: string };
 				try {
 					body = await request.json();
 				} catch {
-					return new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				const { username, email, password } = body;
 				if (!username || !email || !password) {
-					return new Response(JSON.stringify({ success: false, message: 'Missing username, email, or password' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Missing username, email, or password' }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				}
 
 				try {
@@ -110,24 +125,27 @@ export default {
 					// Check if the username or email already exists
 					const existingUser = await collection.findOne({ $or: [{ username }, { email }] });
 					if (existingUser) {
-						return new Response(JSON.stringify({ success: false, message: 'Username or email already exists' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Username or email already exists' }), {
 							status: 409,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					}
 
 					// Insert the new user
 					await collection.insertOne({ username, email, password });
-					return new Response(JSON.stringify({ success: true, message: 'User registered successfully' }), {
+					const response = new Response(JSON.stringify({ success: true, message: 'User registered successfully' }), {
 						status: 201,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				} catch (error) {
 					console.error('Database connection error:', error);
-					return new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+					const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
 						status: 500,
 						headers: { 'Content-Type': 'application/json' },
 					});
+					return addCorsHeaders(response);
 				} finally {
 					await client.close();
 				}
@@ -139,18 +157,20 @@ export default {
 					try {
 						body = await request.json();
 					} catch {
-						return new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Invalid JSON' }), {
 							status: 400,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					}
 
 					const { username, qna } = body;
 					if (!username || !qna || !Array.isArray(qna)) {
-						return new Response(JSON.stringify({ success: false, message: 'Missing or invalid parameters' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Missing or invalid parameters' }), {
 							status: 400,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					}
 
 					try {
@@ -170,22 +190,25 @@ export default {
 						);
 
 						if (result.matchedCount === 0) {
-							return new Response(JSON.stringify({ success: false, message: 'User not found' }), {
+							const response = new Response(JSON.stringify({ success: false, message: 'User not found' }), {
 								status: 404,
 								headers: { 'Content-Type': 'application/json' },
 							});
+							return addCorsHeaders(response);
 						}
 
-						return new Response(JSON.stringify({ success: true, message: 'Answers updated successfully' }), {
+						const response = new Response(JSON.stringify({ success: true, message: 'Answers updated successfully' }), {
 							status: 200,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					} catch (error) {
 						console.error('Database connection error:', error);
-						return new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
 							status: 500,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					} finally {
 						await client.close();
 					}
@@ -194,10 +217,11 @@ export default {
 				if (request.method === 'GET') {
 					const step = parseInt(url.searchParams.get('step') || '1', 10);
 					if (isNaN(step) || step < 1 || step > 3) {
-						return new Response(JSON.stringify({ success: false, message: 'Invalid step parameter' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Invalid step parameter' }), {
 							status: 400,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					}
 
 					const steps = [
@@ -250,10 +274,11 @@ export default {
 						// Assuming the username is passed as a query parameter for simplicity
 						const username = url.searchParams.get('username');
 						if (!username) {
-							return new Response(JSON.stringify({ success: false, message: 'Missing username parameter' }), {
+							const response = new Response(JSON.stringify({ success: false, message: 'Missing username parameter' }), {
 								status: 400,
 								headers: { 'Content-Type': 'application/json' },
 							});
+							return addCorsHeaders(response);
 						}
 
 						const user = await collection.findOne({ username });
@@ -263,16 +288,18 @@ export default {
 							});
 						}
 
-						return new Response(JSON.stringify({ success: true, data: stepData }), {
+						const response = new Response(JSON.stringify({ success: true, data: stepData }), {
 							status: 200,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					} catch (error) {
 						console.error('Database connection error:', error);
-						return new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
+						const response = new Response(JSON.stringify({ success: false, message: 'Internal Server Error' }), {
 							status: 500,
 							headers: { 'Content-Type': 'application/json' },
 						});
+						return addCorsHeaders(response);
 					} finally {
 						await client.close();
 					}
@@ -280,15 +307,44 @@ export default {
 			}
 
 			case '/match': {
-				// HACK: Skip password validation for the prototype
-				return new Response(JSON.stringify({ success: true, message: 'Matches data', data: { /* mock matches data */ } }), {
-					status: 200,
+				if (request.method === 'GET') {
+					const username = url.searchParams.get('username');
+					if (!username) {
+						const response = new Response(JSON.stringify({ success: false, message: 'Missing username parameter' }), {
+							status: 400,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					}
+
+					// Simulate random matching logic
+					const randomValue = Math.random();
+					if (randomValue < 0.8) {
+						const response = new Response(JSON.stringify({ success: true, contact: 'userb@example.com' }), {
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					} else {
+						const response = new Response(JSON.stringify({ success: false, reason: 'not enough user' }), {
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						});
+						return addCorsHeaders(response);
+					}
+				}
+
+				const response = new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
+					status: 405,
 					headers: { 'Content-Type': 'application/json' },
 				});
+				return addCorsHeaders(response);
 			}
 
-			default:
-				return new Response('Not Found', { status: 404 });
+			default: {
+				const response = new Response('Not Found', { status: 404 });
+				return addCorsHeaders(response);
+			}
 		}
 	},
 } satisfies ExportedHandler<Env>;
