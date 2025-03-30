@@ -4,4 +4,6 @@ declare namespace Cloudflare {
 		ASSETS: Fetcher;
 	}
 }
-interface Env extends Cloudflare.Env {}
+interface Env extends Cloudflare.Env {
+	DB_PASS: any;
+}
