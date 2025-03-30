@@ -71,6 +71,12 @@ export default function AuthPage() {
     setError('');
   };
 
+  const handleDemoLogin = (username, password) => {
+    setCredentials({ username, password, email: '', confirmPassword: '' });
+    setIsRegistering(false);
+    setError('');
+  };
+
   return (
     <div className="auth-form">
       <h2>{isRegistering ? 'Create Account' : 'Welcome to HooMatches'}</h2>
@@ -131,6 +137,20 @@ export default function AuthPage() {
         <button type="button" onClick={toggleAuthMode}>
           {isRegistering ? 'Login here' : 'Register here'}
         </button>
+      </div>
+
+      <div className="demo-users">
+        <h3>Demo Users</h3>
+        <button 
+          style={{ marginRight: '10px' }} 
+          onClick={() => handleDemoLogin('john', 'abc')}
+        >
+          Login as John
+        </button>
+        <button onClick={() => handleDemoLogin('morgan_taylor', 'password')}>
+          Login as Morgan Taylor
+        </button>
+        <p>Feel free to register a new user and try the matching process.</p>
       </div>
     </div>
   );
