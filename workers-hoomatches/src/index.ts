@@ -484,8 +484,23 @@ Questions: ${JSON.stringify(steps)}
 							}
 						}
 
-						// Fetch all users excluding the current user
-						const users = await userCollection.find({ username: { $ne: username } }).toArray();
+						// Fetch all users excluding the current user and those with match status "skip"
+						const users = await userCollection.aggregate([
+							{ $match: { username: { $ne: username } } },
+							{
+								$lookup: {
+									from: "match",
+									let: { otherUsername: "$username" },
+									pipeline: [
+										{ $match: { $expr: { $or: [{ $eq: ["$user_a", "$$otherUsername"] }, { $eq: ["$user_b", "$$otherUsername"] }] } } },
+										{ $match: { status: "skip" } }
+									],
+									as: "skippedMatches"
+								}
+							},
+							{ $match: { skippedMatches: { $size: 0 } } }
+						]).toArray();
+
 						let bestMatch: { username: string; score: number } | null = null;
 
 						for (const otherUser of users) {

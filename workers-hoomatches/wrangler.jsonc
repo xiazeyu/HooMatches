@@ -12,7 +12,7 @@
 	],
 	"assets": {
 		"binding": "ASSETS",
-		"directory": "./public"
+		"directory": "../hoomatches/build"
 	},
 	"observability": {
 		"enabled": true
