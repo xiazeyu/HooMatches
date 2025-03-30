@@ -36,6 +36,7 @@ export default {
 				current_step_title: "Basic Information",
 				qna: [
 					{ qid: 0, question: "What is your age? (Please enter a number)", answer: "", placeholder: "25" },
+					{ qid: 16, question: "What is your gender?", answer: "", placeholder: "Male/Female/Non-binary" },
 					{ qid: 1, question: "What is your preferred gender for a match?", answer: "", placeholder: "Male/Female/Non-binary" },
 					{ qid: 2, question: "What is your acceptable age difference range?", answer: "", placeholder: "±3 years" }
 				]
@@ -71,12 +72,34 @@ export default {
 
 		async function queryGemini(userA: any, userB: any, steps: any[]): Promise<number> {
 			const prompt = `
-I have two users that I want to see how they matches as partners. I've asked questions to two users, with their answers provided.
-Give me one score in range of 0-100 on how they matches. Just give me answers, no explanations or others. If user input is missing, give me 0.
-User A: ${JSON.stringify(userA)}
-User B: ${JSON.stringify(userB)}
-Questions: ${JSON.stringify(steps)}
-			`;
+You are a dating app AI that helps users find their best match.
+To do this, you need to analyze the answers of two users and give a score from 0 to 100 on how well they match.
+The higher the score, the better the match.
+The score is based on the following criteria, with a priority order:
+1. Gender: if user's gender and another person's preferred gender are compatible, give a high score. 20 in total.
+2. Age difference: if the age difference is within the acceptable range, give a high score. 15 in total.
+3. Personality: if the personality types are compatible, give a high score. 10 in total.
+4. MBTI: if the MBTI types are compatible, give a high score. 7 in total.
+5. Zodiac: if the zodiac signs are compatible, give a high score. 7 in total.
+6. Interests: if the interests are compatible, give a high score. 10 in total.
+7. Activities: if the activities are compatible, give a high score. 10 in total.
+8. Values: if the values are compatible, give a high score. 10 in total.
+9. Communication: if the communication styles are compatible, give a high score. 10 in total.
+10. Hobbies: if the hobbies are compatible, give a high score. 10 in total.
+11. Other users' expectations: if the answers meet other users' expectations, give a high score. 10 in total.
+12. Data Completeness will not be counted for the score. 10 in total.
+
+
+If user input is totally empty, give me 0.
+
+Give me the answer in json format. {"total_score": 0, "sub_score": [20, 15, ...], "explanation": ""}
+
+User A's input in json format: ${JSON.stringify(userA)}
+
+User B's input in json format: ${JSON.stringify(userB)}
+
+The questions is json format: ${JSON.stringify(steps)}
+`
 			console.log("AI Request Prompt:", prompt); // Log the AI request prompt
 
 			const response = await ai.models.generateContent({
@@ -86,7 +109,16 @@ Questions: ${JSON.stringify(steps)}
 
 			console.log("AI Response:", response.text); // Log the AI response
 
-			return parseInt((response.text ?? "").match(/\d+/)?.[0] || "0", 10);
+			// extract total_score from the response
+			const regex = /"total_score":\s*(\d+)/;
+			const match = response.text?.match(regex);
+			if (match) {
+				const totalScore = parseInt(match[1], 10);
+				return totalScore;
+			} else {
+				console.error("Failed to extract total_score from AI response");
+				return 0; // Default score if extraction fails
+			}
 		}
 
 		async function handleOptions(request: Request): Promise<Response> {
@@ -518,7 +550,7 @@ Questions: ${JSON.stringify(steps)}
 							}
 						}
 
-						if (bestMatch) {
+						if (bestMatch && bestMatch.score >= 70) {
 							// Insert match into the database
 							await matchCollection.insertOne({
 								user_a: username,
@@ -538,7 +570,8 @@ Questions: ${JSON.stringify(steps)}
 							}
 						}
 
-						const response = new Response(JSON.stringify({ success: false, reason: 'No suitable match found' }), {
+						// If no match or score is less than 70
+						const response = new Response(JSON.stringify({ success: false, reason: 'No good match found' }), {
 							status: 200,
 							headers: { 'Content-Type': 'application/json' },
 						});
@@ -565,14 +598,33 @@ Questions: ${JSON.stringify(steps)}
 
 			default: {
 				try {
-					// Serve the React app for unknown paths
-					const reactApp = await env.ASSETS.fetch(request);
-					return addCorsHeaders(reactApp);
-				} catch (error) {
-					console.error('Error serving React app:', error);
-					const response = new Response('Internal Server Error', { status: 500 });
-					return addCorsHeaders(response);
-				}
+						// Check if the request is for a static asset
+						const assetResponse = await env.ASSETS.fetch(request);
+
+						// If the asset is found, return it
+						if (assetResponse.status !== 404 && assetResponse.status !== 403) {
+							return addCorsHeaders(assetResponse);
+						}
+
+						// Log fallback to index.html for debugging
+						console.log(`Falling back to index.html for path: ${url.pathname}`);
+
+						// Serve index.html for React app routes
+						const reactApp = await env.ASSETS.fetch(new Request(`${url.origin}/index.html`, {
+							method: 'GET',
+							headers: request.headers,
+						}));
+
+						// Return the React app's index.html
+						return addCorsHeaders(reactApp);
+					} catch (error) {
+						// Log the error for debugging
+						console.error('Error serving assets or React app:', error);
+
+						// Return a 500 Internal Server Error response
+						const response = new Response('Internal Server Error', { status: 500 });
+						return addCorsHeaders(response);
+					}
 			}
 		}
 	},

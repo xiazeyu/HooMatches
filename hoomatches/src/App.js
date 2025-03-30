@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import LoginPage from './pages/LoginPage';
 import ProfileForm from './pages/ProfileForm';
@@ -12,6 +12,7 @@ function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/profile" element={<ProfileForm />} />
           <Route path="/results" element={<MatchResults />} />
+          <Route path="*" element={<Navigate to="/" />} /> {/* Fallback route */}
         </Routes>
       </div>
     </BrowserRouter>
