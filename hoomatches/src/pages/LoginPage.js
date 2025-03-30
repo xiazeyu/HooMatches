@@ -27,23 +27,39 @@ export default function AuthPage() {
     }
 
     try {
-      const endpoint = isRegistering ? '/api/register' : '/api/login';
-      const payload = isRegistering
-        ? { username: credentials.username, email: credentials.email, password: credentials.password }
-        : { username: credentials.username, password: credentials.password };
+      const endpoint = isRegistering
+        ? 'https://workers-hoomatches.kkmk.workers.dev/register'
+        : 'https://workers-hoomatches.kkmk.workers.dev/login';
 
-      const response = await fetch(endpoint, {
+      const raw = isRegistering
+        ? JSON.stringify({
+            username: credentials.username,
+            email: credentials.email,
+            password: credentials.password,
+          })
+        : JSON.stringify({
+            username: credentials.username,
+            password: credentials.password,
+          });
+
+      const requestOptions = {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+        body: raw,
+        redirect: 'follow',
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
+      const response = await fetch(endpoint, requestOptions);
+
+      const responseData = await response.json();
+      if (!response.ok || !responseData.success) {
+        if (responseData && responseData.message) {
+          throw new Error(responseData.message);
+        } else {
+          throw new Error('Something went wrong');
+        }
       }
 
-      // Simulate successful registration/login
+      // Navigate only if the response indicates success
       navigate('/profile');
     } catch (err) {
       setError(err.message);
